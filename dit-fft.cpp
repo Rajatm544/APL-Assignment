@@ -81,14 +81,28 @@ int main()
         }
 
         // display the given input as x(n)
-        cout << "\nThe given " << n << " point input sequence is as follows: \n";
+        cout << "\nThe given " << n << "-point input sequence is as follows: \n";
         cout << "x(n) = {";
         for (int i = 0; i < n; i++)
         {
             if (i == n - 1)
-                cout << arr[i] << "}\n\n";
+            {
+                if (imag(arr[i]) < 0)
+                    cout << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j}\n\n";
+                else if (imag(arr[i]) > 0)
+                    cout << real(arr[i]) << " + " << imag(arr[i]) << "j}\n\n";
+                else
+                    cout << real(arr[i]) << "}\n\n";
+            }
             else
-                cout << arr[i] << ", ";
+            {
+                if (imag(arr[i]) < 0)
+                    cout << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j, ";
+                else if (imag(arr[i]) > 0)
+                    cout << real(arr[i]) << " + " << imag(arr[i]) << "j, ";
+                else
+                    cout << real(arr[i]) << ", ";
+            }
         }
 
         // verify if input is correct
@@ -112,9 +126,23 @@ int main()
             for (int i = 0; i < n; i++)
             {
                 if (i == n - 1)
-                    cout << arr[i] << "}\n\n";
+                {
+                    if (imag(arr[i]) < 0)
+                        cout << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j}\n\n";
+                    else if (imag(arr[i]) > 0)
+                        cout << real(arr[i]) << " + " << imag(arr[i]) << "j}\n\n";
+                    else
+                        cout << real(arr[i]) << "}\n\n";
+                }
                 else
-                    cout << arr[i] << ", ";
+                {
+                    if (imag(arr[i]) < 0)
+                        cout << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j, ";
+                    else if (imag(arr[i]) > 0)
+                        cout << real(arr[i]) << " + " << imag(arr[i]) << "j, ";
+                    else
+                        cout << real(arr[i]) << ", ";
+                }
             }
 
             cout << "Press 1 to verify, press 0 to change some input value: ";
@@ -151,7 +179,9 @@ int main()
         // Another array of N complex numbers to store values at the end of each stage
         dcomp tempArr[N];
 
-        // cooley tukey algorithm for DIF FFT
+        // ---------------------------------
+        // Cooley-Tukey algorithm for DIF-FFT
+        // ---------------------------------
 
         // Number of stages is equal to log2(N)
         for (int i = 0; i < logN; i++)
@@ -199,10 +229,12 @@ int main()
         {
             if (real(arr[i]) == imag(arr[i]) && real(arr[i]) == 0)
                 cout << "X[" << i << "] = 0\n";
-            else if (imag(arr[i]) < 0)
-                cout << "X[" << i << "] = " << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j\n";
-            else
+            else if (imag(arr[i]) == 0)
+                cout << "X[" << i << "] = " << real(arr[i]) << "\n";
+            else if (imag(arr[i]) > 0)
                 cout << "X[" << i << "] = " << real(arr[i]) << " + " << imag(arr[i]) << "j\n";
+            else
+                cout << "X[" << i << "] = " << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j\n";
         }
     }
 }
