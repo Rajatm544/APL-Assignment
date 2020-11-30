@@ -54,15 +54,40 @@ typedef complex<double> dcomp;
 int main()
 {
 
+    // input a choice to see what the user wants to compute
+    // in case of IDFT, the only 2 differences are that the negetive power of the twiddle factor is multiplied to the subtracted number in the Cooley-Tukey algorithm
+    // And the other change is that the sequence is divided by N at the end
+    int choice;
+    cout << "Enter 1 to compute DFT, Enter 2 to compute IDFT: ";
+    cin >> choice;
+
+    // Ensure choice is either 1 or 2
+    while (choice != 1 && choice != 2)
+    {
+        cout << choice << " is not a valid option, please enter 1 or 2: ";
+        cin >> choice;
+    }
+
+    int dftOrIdft;
+    if (choice == 1)
+        dftOrIdft = -1; // -1 multiplied to the power of twiddle factor is calculation of DFT
+    else
+        dftOrIdft = 1;
+
     int n;
-    cout << "Enter the length of the DFT sequence in powers of 2: ";
+
+    if (choice == 1)
+        cout << "Enter the length of the DFT sequence in powers of 2: ";
+    else
+        cout << "Enter the length of the IDFT sequence in powers of 2: ";
+
     cin >> n;
 
     // Ensure n is a power of 2
     while (ceil(log2(n)) != floor(log2(n)))
     {
         cout << n << " is not a power of 2 \n";
-        cout << "Enter the length of the DFT sequence in powers of 2: ";
+        cout << "Enter the length of the input sequence in powers of 2: ";
         cin >> n;
     }
 
@@ -82,7 +107,12 @@ int main()
 
         // display the given input as x(n)
         cout << "\nThe given " << n << "-point input sequence is as follows: \n";
-        cout << "x(n) = {";
+
+        if (choice == 1)
+            cout << "x(n) = {";
+        else
+            cout << "X(k) = {";
+
         for (int i = 0; i < n; i++)
         {
             if (i == n - 1)
@@ -122,7 +152,10 @@ int main()
 
             // display the given input as x(n)
             cout << "\nThe new " << n << " point input sequence is as follows: \n";
-            cout << "x(n) = {";
+            if (choice == 1)
+                cout << "x(n) = {";
+            else if (choice == 2)
+                cout << " X(k) = {";
             for (int i = 0; i < n; i++)
             {
                 if (i == n - 1)
@@ -149,7 +182,10 @@ int main()
             cin >> isVerified;
         }
 
-        cout << "\nThe " << n << " point DFT sequence, computed using DIF-FFT approach is as follows: \n";
+        if (choice == 1)
+            cout << "\nThe " << n << "-point DFT sequence, computed using DIF-FFT approach is as follows: \n";
+        else
+            cout << "\nThe " << n << "-point IDFT sequence, computed using DIF-IFFT approach is as follows: \n";
 
         // Obtain the index for bit reverse array
         int bitReversedIndex[n];
@@ -180,7 +216,7 @@ int main()
         dcomp tempArr[N];
 
         // ---------------------------------
-        // Cooley-Tukey algorithm for DIF-FFT
+        // Cooley-Tukey algorithm for DIF-FFT and DIF-IFFT
         // ---------------------------------
 
         // Number of stages is equal to log2(N)
@@ -201,7 +237,10 @@ int main()
                 {
                     // calculate the value of twiddle factor as wm = e^(-j*2 pi * k / N) but in polar form
                     // k value will be same as (j / lenBy2PowI), N value will be (length of input / 2^i)
-                    wm = polar(1.0, -2 * M_PI * ((j % lenBy2PowI) / (N / pow(2, i))));
+
+                    // if power is multiplied by -1 => DFT
+                    // if power is multiplied by 1 => IDFT
+                    wm = polar(1.0, (dftOrIdft * 2) * M_PI * ((j % lenBy2PowI) / (N / pow(2, i))));
 
                     // keep the intermediate value of subtraction of required numbers ready for multiplication with twiddle factor
                     dcomp intermediate = arr[j - lenBy2PowI] - arr[j];
@@ -218,23 +257,49 @@ int main()
             }
         }
 
+        // In case of IDFT, after the last stage of outputs, the result is divided by the length of the sequence
+        dcomp length; //dcomp type because division of complex/int is not valid
+
+        if (choice == 1)
+            length = 1;
+        else
+            length = N;
+
         // Since output of DIF-FFT is in bit reversed order, store the result in correct order to arr itself
         for (int i = 0; i < N; i++)
         {
-            arr[i] = tempArr[bitReversedIndex[i]];
+            arr[i] = tempArr[bitReversedIndex[i]] / length;
         }
 
-        // Output the DFT sequence
-        for (int i = 0; i < N; i++)
+        if (choice == 1)
         {
-            if (real(arr[i]) == imag(arr[i]) && real(arr[i]) == 0)
-                cout << "X[" << i << "] = 0\n";
-            else if (imag(arr[i]) == 0)
-                cout << "X[" << i << "] = " << real(arr[i]) << "\n";
-            else if (imag(arr[i]) > 0)
-                cout << "X[" << i << "] = " << real(arr[i]) << " + " << imag(arr[i]) << "j\n";
-            else
-                cout << "X[" << i << "] = " << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j\n";
+            // Output the DFT sequence
+            for (int i = 0; i < N; i++)
+            {
+                if (real(arr[i]) == imag(arr[i]) && real(arr[i]) == 0)
+                    cout << "X[" << i << "] = 0\n";
+                else if (imag(arr[i]) == 0)
+                    cout << "X[" << i << "] = " << real(arr[i]) << "\n";
+                else if (imag(arr[i]) > 0)
+                    cout << "X[" << i << "] = " << real(arr[i]) << " + " << imag(arr[i]) << "j\n";
+                else
+                    cout << "X[" << i << "] = " << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j\n";
+            }
+        }
+        else
+        {
+            // Output the DFT sequence
+            for (int i = 0; i < N; i++)
+            {
+                if (real(arr[i]) == imag(arr[i]) && real(arr[i]) == 0)
+                    cout << "x(" << i << ") = 0\n";
+                else if (imag(arr[i]) == 0)
+                    cout << "x(" << i << ") = " << real(arr[i]) << "\n";
+                else if (imag(arr[i]) > 0)
+                    cout << "x(" << i << ") = " << real(arr[i]) << " + " << imag(arr[i]) << "j\n";
+                else
+                    cout << "x(" << i << ") = " << real(arr[i]) << " - " << -1 * imag(arr[i]) << "j\n";
+            }
         }
     }
 }
