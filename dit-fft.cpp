@@ -146,7 +146,17 @@ int main()
             dcomp newVal;
             cout << "Enter index of value to be changed: ";
             cin >> changedIndex;
+
+            // Ensure that index value is valid
+            while (changedIndex > n - 1)
+            {
+                cout << changedIndex << " is not a valid index.";
+                cout << "\nPlease enter a valid index: ";
+                cin >> changedIndex;
+            }
+
             cout << "Enter new value for index " << changedIndex << ": ";
+
             cin >> newVal;
             arr[changedIndex] = newVal;
 
@@ -156,6 +166,7 @@ int main()
                 cout << "x(n) = {";
             else if (choice == 2)
                 cout << " X(k) = {";
+
             for (int i = 0; i < n; i++)
             {
                 if (i == n - 1)
