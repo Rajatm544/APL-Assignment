@@ -5,39 +5,44 @@
 #include <vector>
 using namespace std;
 
-// Define a datatype 'dcomp' to declare complex numbers
+// shorthand datatype to store double floating point complex numbers
 typedef complex<double> dcomp;
 
 class DFT
 {
 public:
     int N;
-    int TwiddleFactorSign;
-    vector<dcomp> inputs;
-    vector<int> bitReversedIndex;
-    vector<dcomp> bitRevInput;
-
-    vector<dcomp> output;
-    // Another array of N complex numbers to store values at the end of each stage
-    vector<dcomp> tempArr;
-    // Define values for Pi and log2(n)
     double pi;
+    int TwiddleFactorSign;
+
+    vector<dcomp> inputs;         // an array of complex inputs
+    vector<int> bitReversedIndex; // an array of indexes in the bit reveresed order
+    vector<dcomp> output;         // an array to store the final output in the sequential order
+    vector<dcomp> tempArr;        // an array of N complex numbers to store values at the end of each stage
 
     int bitReverse(int n, int size);
     int binaryToDecimal(string binary);
 
+    // constructor
     DFT()
     {
-        TwiddleFactorSign = -1;
-        N = 0;
-        // Define values for Pi and log2(n)
-        pi = 2 * asin(1); // asin(1) return sin inverse of 1 in radians i.e pi/2
+        TwiddleFactorSign = -1; // This sign is that of the power of the twiddle factor, which decides if computation is for DFT/IDFT
+        N = 0;                  // initialise the length of the DFT sequence to default value
+        pi = 2 * asin(1);       // asin(1) return sin inverse of 1 in radians i.e pi/2
     }
 
+    // Get the value for the length of the input sequence
     void getLength()
     {
         cout << "Enter the length of the input sequence in powers of 2: ";
         cin >> N;
+
+        // If a string is input instead of int, it defaults to 0, hence exit() the program to avoid errors
+        if (N == 0)
+        {
+            cout << "\nInvalid input, please re-run the program\n";
+            exit(0);
+        }
 
         // Ensure N is a power of 2
         while (ceil(log2(N)) != floor(log2(N)))
@@ -46,10 +51,20 @@ public:
             cout << "Enter the length of the input sequence in powers of 2: ";
             cin >> N;
         }
+
+        // initilise the temArr vector to hold dummy values for N size, so that we don't get a segmentation fault
+        for (int i = 0; i < N; i++)
+            tempArr.push_back(0);
     }
 
+    // Get the input sequence of complex numbers, and store as class member data
     void getInput()
     {
+        // Display note to help input complex number
+        cout << "\n**Note: You can input a complex number in the form (real,imaginary)\n";
+        cout << "For example, to input 2+3j, you can type (2, 3)\n";
+        cout << "Example Input: 1 0 (2, 3) 1\n\n";
+
         dcomp value;
         cout << "Enter " << N << " data points: ";
         for (int i = 0; i < N; i++)
@@ -59,10 +74,12 @@ public:
         }
     }
 
+    // Display the input sequence after the user inputs it, to verify the input values
     void displayInput()
     {
         for (int i = 0; i < N; i++)
         {
+            // For the last value, display a closing bracket and add a new line
             if (i == N - 1)
             {
                 if (imag(inputs[i]) < 0)
@@ -84,12 +101,20 @@ public:
         }
     }
 
+    // If the user wants to change any of the input value
     virtual void verifyInputs()
     {
         int changedIndex = 0;
         dcomp newVal;
         cout << "Enter index of value to be changed: ";
         cin >> changedIndex;
+
+        // If a string is input insted of the int, then exit()
+        if (changedIndex == 0)
+        {
+            cout << "\nInvalid input, please re-run the program\n";
+            exit(0);
+        }
 
         // Ensure that index value is valid
         while (changedIndex > N - 1)
@@ -102,14 +127,14 @@ public:
         cout << "Enter new value for index " << changedIndex << ": ";
 
         cin >> newVal;
-        inputs.insert(inputs.begin() + changedIndex, newVal);
+        inputs.at(changedIndex) = newVal;
 
-        // display the given input
-        cout << " X(k) = {";
+        // display the newly given input sequence
+        cout << "x(n) = {";
         this->displayInput();
     }
 
-    // Obtain the index for bit reverse array
+    // Create an array of integers to store the but reversed indexes
     void getBitReversedIndex()
     {
         for (int i = 0; i < N; i++)
@@ -118,24 +143,12 @@ public:
         }
     }
 
-    // create an array with inputs in bit reversed order
-    void setBitReversedInput()
-    {
-        for (int i = 0; i < N; i++)
-        {
-            bitRevInput.push_back(inputs.at(bitReversedIndex.at(i)));
-        }
-    }
-
     // calculate the DFT values for each input based on the Cooley-Tukey DIF-FFT method
-    void calculateDFT()
+    void calculateDFTOrIDFT()
     {
+        // complex number to store twiddle factor
+        dcomp wm;
         int logN = log2(N);
-        // initilise the temporary array to hold dummy values for N size, so that we don't get a segmentation fault
-        for (int i = 0; i < N; i++)
-        {
-            tempArr.push_back(0);
-        }
 
         // ---------------------------------
         // Cooley-Tukey algorithm for DIF-FFT
@@ -143,8 +156,7 @@ public:
 
         // Number of stages is equal to log2(N)
         for (int i = 0; i < logN; i++)
-        { // complex number to store twiddle factor
-            dcomp wm;
+        {
             // In each stage, there are N operations of addition of complex numbers
             for (int j = 0; j < N; j++)
             {
@@ -171,8 +183,7 @@ public:
                     tempArr.at(j) = intermediate * wm;
                 }
             }
-
-            // transfer tempArr to srr after each stage, so that tempArr can be overwritten as per next stage's result
+            // transfer tempArr to input vector after each stage, so that tempArr can be overwritten as per next stage's result
             for (int k = 0; k < N; k++)
             {
                 inputs.at(k) = tempArr.at(k);
@@ -184,9 +195,7 @@ public:
     virtual void setOutput()
     {
         for (int i = 0; i < N; i++)
-        {
             output.push_back(tempArr.at(bitReversedIndex.at(i)));
-        }
     }
 
     // Display the computed DFT values
@@ -224,7 +233,7 @@ int DFT::binaryToDecimal(string binary)
     return decVal;
 }
 
-// converting decimal to binary
+// converting decimal to binary in mirrored fashion, to emulate binary format of bit reversed order
 int DFT::bitReverse(int n, int size)
 {
     int num = int(log2(size));
@@ -233,20 +242,26 @@ int DFT::bitReverse(int n, int size)
 
     // converting decimal to binary in mirrored fashion
     if (n == 0)
-        binary[0] = 0;
+    {
+        // if n is zero, then add log2(size) number of zeroes as the binary form of n
+        for (int i = 0; i < num; i++)
+            binary[i] = 0;
+    }
+
     while (n > 0)
     {
-        binary[i] = n % 2;
+        binary[i] = int(n % 2);
         n = n / 2;
         i++;
     }
 
     // converting int[] to String
     string str;
+
     for (int j = 0; j < num; j++)
         str.push_back('0' + binary[j]);
 
-    // convert binary String to a Decimal value
+    // convert binary String to a corresponding decimal value
     return binaryToDecimal(str);
 }
 
@@ -257,18 +272,25 @@ public:
 
     IDFT()
     {
-        TwiddleFactorSign = 1;
+        TwiddleFactorSign = 1; // This is the sign of the power of the twiddle factor, +1 indicates computation of IDFT
         N = 0;
-        // Define values for Pi and log2(n)
         pi = 2 * asin(1); // asin(1) return sin inverse of 1 in radians i.e pi/2
     }
 
+    // Redefine the verifyInputs() member function, to display X(k) instead of x(n) when needed
     void verifyInputs()
     {
         int changedIndex = 0;
         dcomp newVal;
         cout << "Enter index of value to be changed: ";
         cin >> changedIndex;
+
+        // If a string is input insted of the int, then exit()
+        if (changedIndex == 0)
+        {
+            cout << "\nInvalid input, please re-run the program\n";
+            exit(0);
+        }
 
         // Ensure that index value is valid
         while (changedIndex > N - 1)
@@ -281,10 +303,10 @@ public:
         cout << "Enter new value for index " << changedIndex << ": ";
 
         cin >> newVal;
-        inputs.insert(inputs.begin() + changedIndex, newVal);
+        inputs.at(changedIndex) = newVal;
 
-        // display the given input
-        cout << " x(n) = {";
+        // display the newly given input sequence
+        cout << "X(k) = {";
         this->displayInput();
     }
 
@@ -321,13 +343,20 @@ int main()
     // input a choice to see what the user wants to compute
     // in case of IDFT, the only 2 differences are that the negetive power of the twiddle factor is multiplied to the subtracted number in the Cooley-Tukey algorithm
     // And the other change is that the sequence is divided by N at the end
+
     int choice;
     cout << "Enter 1 to compute DFT, Enter 2 to compute IDFT: ";
     cin >> choice;
 
     // Ensure choice is either 1 or 2
-    while (choice != 1 && choice != 2)
+    while ((choice != 1 && choice != 2))
     {
+        if (choice == 0)
+        {
+            cout << "\nInvalid input, please re-run the program\n";
+            exit(0);
+        }
+
         cout << choice << " is not a valid option, please enter 1 or 2: ";
         cin >> choice;
     }
@@ -337,11 +366,6 @@ int main()
         DFT obj;
 
         obj.getLength();
-
-        // Display note to help input complex number
-        cout << "\n**Note: You can input a complex number in the form (real,imaginary)\n";
-        cout << "For example, to input 2+3j, you can type (2, 3)\n\n";
-
         obj.getInput();
 
         // display the given input as x(n)
@@ -350,36 +374,45 @@ int main()
         obj.displayInput();
 
         // verify if input is correct
-        int isVerified = 0;
-        cout << "Enter 1 to verify the input sequence, else press 0 to change any value: ";
+        int isVerified;
+        cout << "Enter 1 to verify the input sequence, enter 2 to change any value: ";
         cin >> isVerified;
 
-        while (isVerified == 0)
+        // Ensure that the input is either 1 or 2
+        while (isVerified != 1 && isVerified != 2)
+        {
+            // if user inputs a string, then the value defaults to 0 as int
+            if (isVerified == 0)
+            {
+                cout << "\nInvalid input, please re-run the program\n";
+                exit(0);
+            }
+            cout << isVerified << " is not a valid input. Please input 1 or 2: ";
+            cin >> isVerified;
+        }
+
+        // Keep asking if the user wants to change any input value, unless 1 is input to verify the input sequence
+        while (isVerified == 2)
         {
             obj.verifyInputs();
-            cout << "Press 1 to verify, press 0 to change some input value: ";
+            cout << "Press 1 to verify, press 2 to change some input value: ";
             cin >> isVerified;
         }
 
         // To print complex numbers without scientific notations
         cout << fixed << setprecision(4);
         cout << "\nThe " << obj.N << "-point DFT sequence, computed using DIF-FFT approach is as follows: \n";
+
         obj.getBitReversedIndex();
-        obj.setBitReversedInput();
-        obj.calculateDFT();
+        obj.calculateDFTOrIDFT();
         obj.setOutput();
         obj.displayOutput();
     }
     else
     {
-
         IDFT obj;
+
         obj.getLength();
-
-        // Display note to help input complex number
-        cout << "\n**Note: You can input a complex number in the form (real,imaginary)\n";
-        cout << "For example, to input 2+3j, you can type (2, 3)\n\n";
-
         obj.getInput();
 
         // display the given input as x(n)
@@ -389,13 +422,27 @@ int main()
 
         // verify if input is correct
         int isVerified = 0;
-        cout << "Enter 1 to verify the input sequence, else press 0 to change any value: ";
+        cout << "Enter 1 to verify the input sequence, enter 2 to change any of the input values: ";
         cin >> isVerified;
 
-        while (isVerified == 0)
+        // Ensure that the user enters either 1 or 2
+        while (isVerified != 1 && isVerified != 2)
+        {
+            // Exit the program if user enter a string or a 0
+            if (isVerified == 0)
+            {
+                cout << "\nInvalid input, please re-run the program\n";
+                exit(0);
+            }
+
+            cout << isVerified << " is not a valid input. Please input 1 or 2: ";
+            cin >> isVerified;
+        }
+
+        while (isVerified == 2)
         {
             obj.verifyInputs();
-            cout << "Press 1 to verify, press 0 to change some input value: ";
+            cout << "Press 1 to verify, press 2 to change some input value: ";
             cin >> isVerified;
         }
 
@@ -404,8 +451,7 @@ int main()
         cout << "\nThe " << obj.N << "-point IDFT sequence, computed using DIF-IFFT approach is as follows: \n";
 
         obj.getBitReversedIndex();
-        obj.setBitReversedInput();
-        obj.calculateDFT();
+        obj.calculateDFTOrIDFT();
         obj.setOutput();
         obj.displayOutput();
     }
