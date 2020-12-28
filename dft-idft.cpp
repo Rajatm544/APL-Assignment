@@ -20,10 +20,9 @@ public:
     vector<dcomp> output;         // an array to store the final output in the sequential order
     vector<dcomp> tempArr;        // an array of N complex numbers to store values at the end of each stage
 
-    int bitReverse(int n, int size);
-    int binaryToDecimal(string binary);
+    int bitReverse(int n, int size); // member function to obtain index in bit reversed order
 
-    // constructor
+    // constructor to assign default values of member data
     DFT()
     {
         TwiddleFactorSign = -1; // This sign is that of the power of the twiddle factor, which decides if computation is for DFT/IDFT
@@ -203,20 +202,22 @@ public:
     {
         for (int i = 0; i < N; i++)
         {
-            if (real(output[i]) == imag(output[i]) && real(output[i]) == 0)
+            if (real(output.at(i)) == imag(output.at(i)) && real(output.at(i)) == 0)
                 cout << "X[" << i << "] = 0\n";
-            else if (imag(output[i]) == 0)
-                cout << "X[" << i << "] = " << real(output[i]) << "\n";
-            else if (imag(output[i]) > 0)
-                cout << "X[" << i << "] = " << real(output[i]) << " + " << imag(output[i]) << "j\n";
+            else if (real(output.at(i)) == 0)
+                cout << "X[" << i << "] = " << imag(output.at(i)) << "j\n";
+            else if (imag(output.at(i)) == 0)
+                cout << "X[" << i << "] = " << real(output.at(i)) << "\n";
+            else if (imag(output.at(i)) > 0)
+                cout << "X[" << i << "] = " << real(output.at(i)) << " + " << imag(output.at(i)) << "j\n";
             else
-                cout << "X[" << i << "] = " << real(output[i]) << " - " << -1 * imag(output[i]) << "j\n";
+                cout << "X[" << i << "] = " << real(output.at(i)) << " - " << -1 * imag(output.at(i)) << "j\n";
         }
     }
 };
 
-// converting binary String to decimal
-int DFT::binaryToDecimal(string binary)
+// converting binary String to corresponding decimal number
+int binaryToDecimal(string binary)
 {
     string num = binary;
     int decVal = 0;
@@ -250,14 +251,13 @@ int DFT::bitReverse(int n, int size)
 
     while (n > 0)
     {
-        binary[i] = int(n % 2);
+        binary[i] = n % 2;
         n = n / 2;
         i++;
     }
 
     // converting int[] to String
     string str;
-
     for (int j = 0; j < num; j++)
         str.push_back('0' + binary[j]);
 
@@ -265,11 +265,13 @@ int DFT::bitReverse(int n, int size)
     return binaryToDecimal(str);
 }
 
+// Single inheritance of the DFT class
 class IDFT : public DFT
 {
 public:
     int TwiddleFactorSign;
 
+    // constructor to override the inherited constructor
     IDFT()
     {
         TwiddleFactorSign = 1; // This is the sign of the power of the twiddle factor, +1 indicates computation of IDFT
@@ -326,14 +328,16 @@ public:
     {
         for (int i = 0; i < N; i++)
         {
-            if (real(output[i]) == imag(output[i]) && real(output[i]) == 0)
+            if (real(output.at(i)) == imag(output.at(i)) && real(output.at(i)) == 0)
                 cout << "x(" << i << ") = 0\n";
-            else if (imag(output[i]) == 0)
-                cout << "x(" << i << ") = " << real(output[i]) << "\n";
-            else if (imag(output[i]) > 0)
-                cout << "x(" << i << ") = " << real(output[i]) << " + " << imag(output[i]) << "j\n";
+            else if (real(output.at(i)) == 0)
+                cout << "x[" << i << "] = " << imag(output.at(i)) << "j\n";
+            else if (imag(output.at(i)) == 0)
+                cout << "x(" << i << ") = " << real(output.at(i)) << "\n";
+            else if (imag(output.at(i)) > 0)
+                cout << "x(" << i << ") = " << real(output.at(i)) << " + " << imag(output.at(i)) << "j\n";
             else
-                cout << "x(" << i << ") = " << real(output[i]) << " - " << -1 * imag(output[i]) << "j\n";
+                cout << "x(" << i << ") = " << real(output.at(i)) << " - " << -1 * imag(output.at(i)) << "j\n";
         }
     }
 };
