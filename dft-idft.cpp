@@ -5,8 +5,8 @@
 #include <vector>
 using namespace std;
 
-// shorthand datatype to store double floating point complex numbers
-typedef complex<double> dcomp;
+// shorthand datatype to store floating point complex numbers
+typedef complex<float> fcomp;
 
 class DFT
 {
@@ -15,10 +15,10 @@ public:
     double pi;
     int TwiddleFactorSign;
 
-    vector<dcomp> inputs;         // an array of complex inputs
+    vector<fcomp> inputs;         // an array of complex inputs
     vector<int> bitReversedIndex; // an array of indexes in the bit reveresed order
-    vector<dcomp> output;         // an array to store the final output in the sequential order
-    vector<dcomp> tempArr;        // an array of N complex numbers to store values at the end of each stage
+    vector<fcomp> output;         // an array to store the final output in the sequential order
+    vector<fcomp> tempArr;        // an array of N complex numbers to store values at the end of each stage
 
     int bitReverse(int n, int size); // member function to obtain index in bit reversed order
 
@@ -64,7 +64,7 @@ public:
         cout << "For example, to input 2+3j, you can type (2, 3)\n";
         cout << "Example Input: 1 0 (2, 3) 1\n\n";
 
-        dcomp value;
+        fcomp value;
         cout << "Enter " << N << " data points: ";
         for (int i = 0; i < N; i++)
         {
@@ -104,7 +104,7 @@ public:
     virtual void verifyInputs()
     {
         int changedIndex = 0;
-        dcomp newVal;
+        fcomp newVal;
         cout << "Enter index of value to be changed: ";
         cin >> changedIndex;
 
@@ -146,7 +146,7 @@ public:
     void calculateDFTOrIDFT()
     {
         // complex number to store twiddle factor
-        dcomp wm;
+        fcomp wm;
         int logN = log2(N);
 
         // ---------------------------------
@@ -176,7 +176,7 @@ public:
                     wm = polar(1.0, (TwiddleFactorSign * 2) * M_PI * ((j % lenBy2PowI) / (N / pow(2, i))));
 
                     // keep the intermediate value of subtraction of required numbers ready for multiplication with twiddle factor
-                    dcomp intermediate = inputs.at(j - lenBy2PowI) - inputs.at(j);
+                    fcomp intermediate = inputs.at(j - lenBy2PowI) - inputs.at(j);
 
                     // Store the result of this operation to the temp array
                     tempArr.at(j) = intermediate * wm;
@@ -283,7 +283,7 @@ public:
     void verifyInputs()
     {
         int changedIndex = 0;
-        dcomp newVal;
+        fcomp newVal;
         cout << "Enter index of value to be changed: ";
         cin >> changedIndex;
 
@@ -316,7 +316,7 @@ public:
     void setOutput()
     {
         // In case of IDFT, after the last stage of outputs, the result is divided by the length of the sequence
-        dcomp length = N; //dcomp type because division of complex/int is not valid
+        fcomp length = N; //fcomp type because division of complex/int is not valid
         for (int i = 0; i < N; i++)
         {
             output.push_back(tempArr.at(bitReversedIndex.at(i)) / length);
