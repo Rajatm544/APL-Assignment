@@ -101,7 +101,7 @@ public:
     }
 
     // If the user wants to change any of the input value
-    virtual void verifyInputs()
+    void verifyInputs()
     {
         int changedIndex = 0;
         fcomp newVal;
@@ -191,14 +191,14 @@ public:
     }
 
     // Store the computed DFT values in sequenctial order, as DIF-FFT gives it in bit reversed order
-    virtual void setOutput()
+    void setOutput()
     {
         for (int i = 0; i < N; i++)
             output.push_back(tempArr.at(bitReversedIndex.at(i)));
     }
 
     // Display the computed DFT values
-    virtual void displayOutput()
+    void displayOutput()
     {
         for (int i = 0; i < N; i++)
         {
